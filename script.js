@@ -34,22 +34,19 @@ let lastAnswer;
 allClear()
 
 function actionInput(id) {
-
     if (displayFrozen && id !== "ac") {
-        // need to wait for allClear input
+        // take no action until allClear input
     } else if (id[0] === 'b') {
-        // deal with numerical inputs
+        // deal with digit inputs
         registers[current] += id[1];
         writeDisplay(registers[current]);
     } else {
-        // all other inputs
-        actionOperation(id);
+        actionNonDigit(id);
     }
     lastKeyPress = id;
 }
 
-function actionOperation(id) {
-
+function actionNonDigit(id) {
     switch (id) {
         case "ac":
             allClear();
@@ -68,32 +65,43 @@ function actionOperation(id) {
             }
             break;
         case "pi":
-            registers[current] = "3.14159265359";
+            registers[current] = "3.141592653589793";
             writeDisplay(registers[current]);
             break;
         case "eq":
-            if (registers[1]) {
-                lastAnswer = operate();
-                writeDisplay(lastAnswer);
-                registers = ["", ""]
-                current = 0;
-            }
+            actionEq();
             break;
-        default:
-            if (lastKeyPress === "eq") {
-                registers = [lastAnswer, ""];
-            }
-            if (registers[1]) {
-                const tempAns = operate();
-                writeDisplay(tempAns);
-                registers = [tempAns, ""];
-            }
-            operator = id;
-            current = 1;
+        case "plu":
+        case "sub":
+        case "mul":
+        case "div":
+            actionOp(id);
     }
 }
 
-function operate() {
+function actionEq() {
+    if (registers[1]) {
+        lastAnswer = calculate();
+        writeDisplay(lastAnswer);
+        registers = ["", ""]
+        current = 0;
+    }
+}
+
+function actionOp(id) {
+    if (lastKeyPress === "eq") {
+        registers = [lastAnswer, ""];
+    }
+    if (registers[1]) {
+        const tempAns = calculate();
+        writeDisplay(tempAns);
+        registers = [tempAns, ""];
+    }
+    operator = id;
+    current = 1;
+}
+
+function calculate() {
     const a = Number(registers[0]);
     const b = Number(registers[1]);
     var ans = 0;
@@ -118,12 +126,10 @@ function operate() {
 }
 
 function writeDisplay(x) {
-    if (Number(x) >= 1_000_000_000_000) {
+    if (!isFinite(x)) {
         display.textContent = mathError();
-    } else if (Number(x) < 0.0000000001 && Number(x) > -0.0000000001) {
-        display.textContent = 0;
     } else {
-        display.textContent = x.slice(0, 13);
+        display.textContent = String(Number(x));
     }
 }
 
