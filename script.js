@@ -1,12 +1,17 @@
+"use strict";
+
 const buttons = document.querySelectorAll("button");
 const display = document.querySelector("#display");
 
-for (i = 0; i < buttons.length; i++) {
+for (let i = 0; i < buttons.length; i++) {
     buttons[i].addEventListener("click", e => action(e.target.id));
 }
 
-let leftOperand, operator, rightOperand, displayFrozen, displayRefresh, lastAnswer;
+let registers, operator, current;
+let lastKeyPress, displayFrozen;
 allClear()
+
+let lastAnswer = 0;
 
 function action(id) {
     if (displayFrozen && id !== "ac") {
@@ -15,98 +20,95 @@ function action(id) {
 
     if (id[0] === 'b') {
         addDigit(id[1]);
-        return;
+        writeDisplay(registers[current]);
+    } else {
+        switch (id) {
+            case "ac":
+                allClear();
+                break;
+            case "pi":
+                registers[current] = "3.14159265359";
+                writeDisplay(registers[current]);
+                break;
+            case "lan":
+                registers[current] = lastAnswer;
+                writeDisplay(registers[current]);
+                break;
+            case "eq":
+                if (registers[0] && operator && registers[1]) {
+                    lastAnswer = operate();
+                    writeDisplay(lastAnswer);
+                    registers = ["", ""]
+                    current = 0;
+                    operator = null;
+                }
+                break;
+            default:
+                if (lastKeyPress === "eq") {
+                    registers[0] = lastAnswer;
+                    current = 1;
+                    operator = id;
+                } else if (current === 0) {
+                    current = 1;
+                    operator = id;
+                } else {
+                    const tempAns = operate();
+                    writeDisplay(tempAns);
+                    registers = [tempAns, ""];
+                    operator = id;
+                    current = 1;
+                }
+        }
     }
-
-    switch (id) {
-        case "pi":
-            display.textContent = "3.14";
-            displayRefresh = false;
-            break;
-        case "lan":
-            display.textContent = lastAnswer;
-            displayRefresh = false;
-            break;
-        case "ac":
-            allClear();
-            break;
-        case "eq":
-            if (leftOperand !== null && operator !== null) {
-                rightOperand = readDisplay();
-                const ans = operate(operator, leftOperand, rightOperand).toFixed(2);
-                processAnswer(ans);
-                lastAnswer = ans;
-                displayRefresh = true;
-            }
-            break;
-        default:
-            if (operator === null) {
-                leftOperand = readDisplay();
-                operator = id;
-                displayRefresh = true;
-            } else {
-                rightOperand = readDisplay();
-                const ans = operate(operator, leftOperand, rightOperand);
-                processAnswer(ans);
-                operator = id;
-                displayRefresh = true;
-            }
-    }
-
-
+    lastKeyPress = id;
 }
 
-function operate(operator, a, b) {
+function operate() {
+    const a = Number(registers[0]);
+    const b = Number(registers[1]);
+    var ans = 0;
     switch (operator) {
         case "plu":
-            return a + b;
+            ans = a + b;
+            break;
         case "sub":
-            return a - b;
+            ans = a - b;
+            break;
         case "mul":
-            return a * b;
+            ans = a * b;
+            break;
         case "div":
-            return b === 0 ? undefined : a / b;
-        default:
-            return undefined;
+            if (b === 0) {
+                ans = mathError();
+            } else {
+                ans = a / b;
+            }
     }
-}
-
-function processAnswer(ans) {
-    if (ans === undefined) {
-        display.textContent = "MathError";
-        displayFrozen = true;
-    } else {
-        display.textContent = ans;
-        leftOperand = ans;
-        operator = null;
-        rightOperand = null;
-    }
-}
-
-function allClear() {
-    leftOperand = null;
-    operator = null;
-    rightOperand = null;
-    displayRefresh = true;
-    displayFrozen = false;
-    lastAnswer = 0
-    display.textContent = "0";
+    return String(ans);
 }
 
 function addDigit(ch) {
-    if (displayRefresh) {
-        display.textContent = ch;
-        displayRefresh = false;
+    registers[current] += ch;
+}
+
+function writeDisplay(x) {
+    if (Number(x) >= 1_000_000_000_000) {
+        display.textContent = mathError();
     } else {
-        display.textContent += ch;
+        display.textContent = x.slice(0, 13);
     }
 }
 
-function readDisplay() {
-    if (displayRefresh) {
-        display.textContent = 0;
-        displayRefresh = false;
-        return 0;
-    }
-    return Number(display.textContent);
+function mathError() {
+    displayFrozen = true;
+    return "MathError";
+}
+
+function allClear() {
+    registers = ["", ""]
+    current = 0;
+    operator = null;
+    lastKeyPress = null;
+    displayFrozen = false;
+    display.textContent = "on";
 }
