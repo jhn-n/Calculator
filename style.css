@@ -4,23 +4,9 @@ body {
     padding: 50px;
     background-color: cornflowerblue;
     font-family: Tahoma, sans-serif;
-}
-
-.container {
     display: flex;
     flex-direction: column;
     align-items: center;
-}
-
-h1 {
-    margin-bottom: 100px;
-}
-
-button {
-    width: 100px;
-    height: 60px;
-    margin: 5px;
-    font-size: 30px;
 }
 
 .calculator {
@@ -70,4 +56,11 @@ button {
     display: flex;
     justify-content: end;
     align-items: center;
+}
+
+button {
+        width: 100px;
+        height: 60px;
+        margin: 5px;
+        font-size: 30px;
 }
