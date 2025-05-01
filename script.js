@@ -9,9 +9,8 @@ for (let i = 0; i < buttons.length; i++) {
 
 let registers, operator, current;
 let lastKeyPress, displayFrozen;
+let lastAnswer;
 allClear()
-
-let lastAnswer = 0;
 
 function action(id) {
     if (displayFrozen && id !== "ac") {
@@ -19,12 +18,16 @@ function action(id) {
     }
 
     if (id[0] === 'b') {
-        addDigit(id[1]);
+        registers[current] += id[1];
         writeDisplay(registers[current]);
     } else {
         switch (id) {
             case "ac":
                 allClear();
+                break;
+            case "del":
+                registers[current] = registers[current].slice(0, -1);
+                writeDisplay(registers[current]);
                 break;
             case "pi":
                 registers[current] = "3.14159265359";
@@ -33,6 +36,11 @@ function action(id) {
             case "lan":
                 registers[current] = lastAnswer;
                 writeDisplay(registers[current]);
+                break;
+            case "dp":
+                if (!registers[current].includes(".")) {
+                    registers[current] += ".";
+                }
                 break;
             case "eq":
                 if (registers[0] && operator && registers[1]) {
@@ -46,18 +54,14 @@ function action(id) {
             default:
                 if (lastKeyPress === "eq") {
                     registers[0] = lastAnswer;
-                    current = 1;
-                    operator = id;
-                } else if (current === 0) {
-                    current = 1;
-                    operator = id;
-                } else {
+                }
+                if (current === 1) {
                     const tempAns = operate();
                     writeDisplay(tempAns);
                     registers = [tempAns, ""];
-                    operator = id;
-                    current = 1;
                 }
+                operator = id;
+                current = 1;
         }
     }
     lastKeyPress = id;
@@ -87,10 +91,6 @@ function operate() {
     return String(ans);
 }
 
-function addDigit(ch) {
-    registers[current] += ch;
-}
-
 function writeDisplay(x) {
     if (Number(x) >= 1_000_000_000_000) {
         display.textContent = mathError();
@@ -110,5 +110,6 @@ function allClear() {
     operator = null;
     lastKeyPress = null;
     displayFrozen = false;
+    lastAnswer = 0;
     display.textContent = "on";
 }
