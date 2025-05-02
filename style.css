@@ -1,3 +1,8 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
 body {
     box-sizing: border-box;
     margin: 0;
@@ -12,32 +17,23 @@ body {
 .calculator {
     background-color: darkslategrey;
     border: 2px white solid;
-    margin: auto;
-    padding: 30px;
+    padding: 15px;
     display: flex;
     flex-direction: column;
     justify-content: space-evenly;
     text-align: center;
 }
 
-.topRow {
-    display: flex;
-    margin-bottom: 30px;
-}
-
 #logo {
-    font-size: 20px;
-    margin-top: 20px;
-    margin-right: auto;
-    padding-left: 10px;
+    margin: 5px 20px;
+    font-size: 15px;
     list-style-type: none;
     display: flex;
-    flex-direction: column;
     align-items: center;
+    justify-content: space-between;
 }
 
 #logo li:first-child {
-    margin-bottom: 15px;
     color: bisque;
 }
 
@@ -46,21 +42,25 @@ body {
 }
 
 #display {
-    margin: 10px;
-    width: 400px;
-    height: 60px;
+    margin: 10px 5px 30px 5px;
+    height: 40px;
     border: 1px rgb(20, 34, 34);
     background-color: bisque;
-    font-size: 30px;
-    padding-right: 20px;
+    font-size: 18px;
+    padding-right: 10px;
     display: flex;
     justify-content: end;
     align-items: center;
 }
 
+.rowButtons {
+    display: flex;
+}
+
 button {
-    width: 100px;
-    height: 60px;
+    min-width: 40px;
+    height: 30px;
     margin: 5px;
-    font-size: 30px;
+    font-size: 20px;
+    flex: 1;
 }

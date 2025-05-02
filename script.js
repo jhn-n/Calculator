@@ -1,30 +1,32 @@
 "use strict";
 
+const pi = "3.141592653589793"
 const keyMap = {
     '+': "plu",
     '-': "sub",
     '*': "mul",
     '/': "div",
     ".": "dp",
-    "Enter": "eq",
+    "=": "eq",
     "Delete": "del",
     "Backspace": "del",
+    " ": "ac",
 };
 
 const buttons = document.querySelectorAll("button");
 const display = document.querySelector("#display");
 
 for (let i = 0; i < buttons.length; i++) {
-    buttons[i].addEventListener("click", e => actionInput(e.target.id));
+    buttons[i].addEventListener("click", e => actionWrapper(e.target.id));
 }
 
 document.addEventListener("keydown", e => {
-    const keyName = e.key;
+    const keyName = e.key; 
     if (keyName >= '0' && keyName <= '9') {
-        actionInput('b' + keyName);
+        actionWrapper('b' + keyName);
     }
     if (keyName in keyMap) {
-        actionInput(keyMap[keyName]);
+        actionWrapper(keyMap[keyName]);
     }
 });
 
@@ -33,40 +35,41 @@ let lastKeyPress, displayFrozen;
 let lastAnswer;
 allClear()
 
-function actionInput(id) {
+function actionWrapper(id) {
     if (displayFrozen && id !== "ac") {
-        // take no action until allClear input
-    } else if (id[0] === 'b') {
-        // deal with digit inputs
-        registers[current] += id[1];
-        writeDisplay(registers[current]);
+        // must use allClear to unfreeze
     } else {
-        actionNonDigit(id);
+        action(id);
     }
-    lastKeyPress = id;
 }
 
-function actionNonDigit(id) {
-    switch (id) {
+function action(id) {
+    const switchVal = (id[0] === 'b') ? "digit" : id;
+    switch (switchVal) {
+        case "digit":
+            registers[current] += id[1];
+            displayWorking(registers[current]);
+            break;
         case "ac":
             allClear();
             break;
         case "del":
             registers[current] = registers[current].slice(0, -1);
-            writeDisplay(registers[current]);
+            displayWorking(registers[current]);
             break;
         case "lan":
             registers[current] = lastAnswer;
-            writeDisplay(registers[current]);
+            displayAns(registers[current]);
             break;
         case "dp":
             if (!registers[current].includes(".")) {
                 registers[current] += ".";
             }
+            displayWorking(registers[current]);
             break;
         case "pi":
-            registers[current] = "3.141592653589793";
-            writeDisplay(registers[current]);
+            registers[current] = pi;
+            displayAns(registers[current]);
             break;
         case "eq":
             actionEq();
@@ -77,12 +80,13 @@ function actionNonDigit(id) {
         case "div":
             actionOp(id);
     }
+    lastKeyPress = id;
 }
 
 function actionEq() {
     if (registers[1]) {
         lastAnswer = calculate();
-        writeDisplay(lastAnswer);
+        displayAns(lastAnswer);
         registers = ["", ""]
         current = 0;
     }
@@ -93,10 +97,9 @@ function actionOp(id) {
         registers = [lastAnswer, ""];
     }
     if (registers[1]) {
-        const tempAns = calculate();
-        writeDisplay(tempAns);
-        registers = [tempAns, ""];
+        registers = [calculate(), ""];
     }
+    displayAns(registers[0])
     operator = id;
     current = 1;
 }
@@ -125,12 +128,16 @@ function calculate() {
     return String(ans);
 }
 
-function writeDisplay(x) {
-    if (!isFinite(x)) {
+function displayAns(x) {
+    if (!isFinite(Number(x))) {
         display.textContent = mathError();
     } else {
         display.textContent = String(Number(x));
     }
+}
+
+function displayWorking(x) {
+    display.textContent = x.length > 20 ? "..." + x.slice(-20) : x;
 }
 
 function mathError() {
