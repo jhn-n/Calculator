@@ -10,7 +10,8 @@ const keyMap = {
     "=": "eq",
     "Delete": "del",
     "Backspace": "del",
-    " ": "ac",
+    "a": "ac",
+    "p": "pi",
 };
 
 const buttons = document.querySelectorAll("button");
